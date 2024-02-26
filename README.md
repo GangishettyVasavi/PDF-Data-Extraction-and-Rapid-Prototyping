@@ -44,4 +44,33 @@ if __name__ == "__main__":
     # Save the extracted data to a CSV file
     save_to_csv(header_data, tabular_data, csv_path)
 
+#Here's a basic example of a Flask application 
+
+from flask import Flask, render_template, request
+import invoice_extractor
+
+app = Flask(__name__)
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    if 'file' not in request.files:
+        return "No file part"
+    
+    file = request.files['file']
+
+    if file.filename == '':
+        return "No selected file"
+
+    if file:
+        file.save('uploaded_invoice.pdf')  # Save the file locally
+        header_data, tabular_data = invoice_extractor.extract_key_value_pairs('uploaded_invoice.pdf')
+        invoice_extractor.save_to_csv(header_data, tabular_data, 'output.csv')
+        return render_template('result.html', header_data=header_data, tabular_data=tabular_data)
+
+if __name__ == '__main__':
+    app.run(debug=True)
 
